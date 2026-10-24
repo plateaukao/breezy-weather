@@ -281,6 +281,10 @@ object DailyTrendWidgetIMP : AbstractRemoteViewsPresenter() {
                         ResourceHelper.getWidgetNotificationIcon(provider, it, false, minimalIcon, lightTheme)
                     )
                 }
+                if (SettingsManager.getInstance(context).isEinkMode) {
+                    widgetItemView.trendItemView.setTextColors(Color.BLACK, Color.BLACK, Color.BLACK)
+                    widgetItemView.trendItemView.setHistogramAlpha(1f)
+                }
                 widgetItemView.setColor(lightTheme)
             }
         }

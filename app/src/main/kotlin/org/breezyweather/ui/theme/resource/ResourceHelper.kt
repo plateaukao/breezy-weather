@@ -31,9 +31,11 @@ import androidx.annotation.Size
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.createBitmap
 import breezyweather.domain.weather.reference.WeatherCode
+import org.breezyweather.BreezyWeather
 import org.breezyweather.R
 import org.breezyweather.common.extensions.formatMeasure
 import org.breezyweather.common.options.NotificationTextColor
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.theme.resource.providers.DefaultResourceProvider
 import org.breezyweather.ui.theme.resource.providers.ResourceProvider
 import org.breezyweather.unit.formatting.UnitWidth
@@ -101,6 +103,9 @@ object ResourceHelper {
         minimal: Boolean,
         textColor: NotificationTextColor?,
     ): Uri {
+        if (SettingsManager.getInstance(BreezyWeather.instance).isEinkMode) {
+            return provider.getMinimalDarkIconUri(code, dayTime)
+        }
         if (minimal) {
             return when (textColor) {
                 NotificationTextColor.LIGHT -> provider.getMinimalLightIconUri(code, dayTime)

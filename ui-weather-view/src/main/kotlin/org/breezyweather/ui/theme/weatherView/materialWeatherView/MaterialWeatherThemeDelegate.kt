@@ -31,7 +31,9 @@ import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.Sn
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.SunImplementor
 import org.breezyweather.ui.theme.weatherView.materialWeatherView.implementor.WindImplementor
 
-class MaterialWeatherThemeDelegate : WeatherThemeDelegate {
+class MaterialWeatherThemeDelegate(
+    private val isEinkMode: (Context) -> Boolean = { false },
+) : WeatherThemeDelegate {
 
     companion object {
 
@@ -75,6 +77,7 @@ class MaterialWeatherThemeDelegate : WeatherThemeDelegate {
         weatherKind: Int,
         daylight: Boolean,
     ): IntArray {
+        if (isEinkMode(context)) return intArrayOf(Color.BLACK, 0xFF003B73.toInt(), 0xFF8B2500.toInt())
         var color = innerGetBackgroundColor(weatherKind, daylight)
         if (!daylight) {
             color = getBrighterColor(color)
@@ -91,6 +94,7 @@ class MaterialWeatherThemeDelegate : WeatherThemeDelegate {
         weatherKind: Int,
         daylight: Boolean,
     ): Boolean {
+        if (isEinkMode(context)) return true
         return daylight &&
             (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) !=
             Configuration.UI_MODE_NIGHT_YES
@@ -101,7 +105,7 @@ class MaterialWeatherThemeDelegate : WeatherThemeDelegate {
         weatherKind: Int,
         daylight: Boolean,
     ): Int {
-        return innerGetBackgroundColor(weatherKind, daylight)
+        return if (isEinkMode(context)) Color.WHITE else innerGetBackgroundColor(weatherKind, daylight)
     }
 
     override fun getOnBackgroundColor(

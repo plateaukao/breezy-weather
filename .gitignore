@@ -43,3 +43,6 @@ bin/
 /currentPosition.properties
 /captures
 /local.properties
+
+# Local release signing material
+.signing/

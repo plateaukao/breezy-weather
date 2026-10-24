@@ -29,6 +29,7 @@ import org.breezyweather.R
 import org.breezyweather.common.extensions.dpToPx
 import org.breezyweather.common.extensions.formatMeasure
 import org.breezyweather.common.extensions.getTypefaceFromTextAppearance
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.unit.formatting.UnitWidth
 import org.breezyweather.unit.temperature.Temperature.Companion.deciCelsius
 import org.breezyweather.unit.temperature.TemperatureUnit
@@ -145,7 +146,10 @@ class TrendLinearLayout @JvmOverloads constructor(
     }
 
     fun setColor(lightTheme: Boolean) {
-        if (lightTheme) {
+        if (SettingsManager.getInstance(context).isEinkMode) {
+            mLineColor = Color.DKGRAY
+            mTextColor = Color.BLACK
+        } else if (lightTheme) {
             mLineColor = ColorUtils.setAlphaComponent(Color.BLACK, (255 * 0.075).toInt())
             mTextColor = ColorUtils.setAlphaComponent(
                 ContextCompat.getColor(context, R.color.colorTextDark2nd),

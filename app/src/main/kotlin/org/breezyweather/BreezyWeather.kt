@@ -183,10 +183,7 @@ class BreezyWeather : Application(), Configuration.Provider {
 
     val isImpersonatingBreezyWeather: Boolean
         get() {
-            return (
-                getString(R.string.brand_name).contains("breezy", ignoreCase = true) ||
-                    BuildConfig.APPLICATION_ID.contains("breezy", ignoreCase = true)
-                ) &&
+            return getString(R.string.brand_name).contains("breezy", ignoreCase = true) &&
                 !isSignedByBreezy &&
                 !debugMode
         }

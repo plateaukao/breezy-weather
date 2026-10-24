@@ -18,6 +18,8 @@ package org.breezyweather.ui.details
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -56,6 +59,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -87,6 +97,7 @@ import org.breezyweather.common.extensions.toTimezoneSpecificHour
 import org.breezyweather.common.options.appearance.CalendarHelper
 import org.breezyweather.common.options.appearance.DetailScreen
 import org.breezyweather.common.source.PollenIndexSource
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.domain.weather.index.PollutantIndex
 import org.breezyweather.domain.weather.model.getConcentration
 import org.breezyweather.domain.weather.model.isToday
@@ -180,6 +191,8 @@ internal fun DailyWeatherScreen(
                         DailyPagerContent(
                             location = loc,
                             selected = page,
+                            isCurrentPage = page == pagerPage,
+                            onChangeDay = { pagerState.scrollToPage(it) },
                             selectedChart = detailsUiState.selectedChart,
                             setSelectedChart = { chart -> detailsViewModel.setSelectedChart(chart) },
                             selectedPollutant = detailsUiState.selectedPollutant,
@@ -352,6 +365,8 @@ fun DetailsDropdownMenu(
 fun DailyPagerContent(
     location: Location,
     selected: Int,
+    isCurrentPage: Boolean,
+    onChangeDay: suspend (Int) -> Unit,
     selectedChart: DetailScreen,
     setSelectedChart: (DetailScreen) -> Unit,
     selectedPollutant: PollutantIndex?,
@@ -359,6 +374,16 @@ fun DailyPagerContent(
     pollenIndexSource: PollenIndexSource?,
     modifier: Modifier = Modifier,
 ) {
+    val einkMode = SettingsManager.getInstance(LocalContext.current).isEinkMode
+    val volumeNavigationEnabled = einkMode && isCurrentPage &&
+        (selectedChart == DetailScreen.TAG_CONDITIONS || selectedChart == DetailScreen.TAG_FEELS_LIKE)
+    val listState = rememberLazyListState()
+    val focusRequester = remember { FocusRequester() }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(volumeNavigationEnabled) {
+        if (volumeNavigationEnabled) focusRequester.requestFocus()
+    }
+
     val daily = remember(location, selected) {
         location.weather!!.dailyForecast[selected]
     }
@@ -397,6 +422,26 @@ fun DailyPagerContent(
 
     Column(
         modifier = modifier
+            .onPreviewKeyEvent { event ->
+                if (volumeNavigationEnabled && (event.key == Key.VolumeDown || event.key == Key.VolumeUp)) {
+                    if (event.type == KeyEventType.KeyDown && !listState.isScrollInProgress) {
+                        scope.launch {
+                            navigateForecastWithVolumeKey(
+                                forward = event.key == Key.VolumeDown,
+                                listState = listState,
+                                currentDay = selected,
+                                dayCount = location.weather!!.dailyForecast.size,
+                                onChangeDay = onChangeDay
+                            )
+                        }
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+            .focusRequester(focusRequester)
+            .focusable(enabled = volumeNavigationEnabled)
     ) {
         when (selectedChart) {
             DetailScreen.TAG_CONDITIONS, DetailScreen.TAG_FEELS_LIKE -> {
@@ -406,7 +451,8 @@ fun DailyPagerContent(
                     daily,
                     location.weather?.normals?.getOrElse(daily.date.getCalendarMonth(location)) { null },
                     selectedChart,
-                    { setSelectedChart(if (it) DetailScreen.TAG_CONDITIONS else DetailScreen.TAG_FEELS_LIKE) }
+                    { setSelectedChart(if (it) DetailScreen.TAG_CONDITIONS else DetailScreen.TAG_FEELS_LIKE) },
+                    listState = listState
                 )
             }
             DetailScreen.TAG_PRECIPITATION -> {
@@ -514,5 +560,22 @@ fun DailyPagerContent(
                 DetailsSunMoon(location, daily, sunTimes, moonTimes)
             }
         }
+    }
+}
+
+internal suspend fun navigateForecastWithVolumeKey(
+    forward: Boolean,
+    listState: LazyListState,
+    currentDay: Int,
+    dayCount: Int,
+    onChangeDay: suspend (Int) -> Unit,
+) {
+    if (if (forward) listState.canScrollForward else listState.canScrollBackward) {
+        val layout = listState.layoutInfo
+        val page = (layout.viewportEndOffset - layout.viewportStartOffset) * 0.8f
+        listState.scrollBy(if (forward) page else -page)
+    } else {
+        val nextDay = currentDay + if (forward) 1 else -1
+        if (nextDay in 0 until dayCount) onChangeDay(nextDay)
     }
 }

@@ -777,6 +777,8 @@
     <string name="settings_appearance_section_theme">Theme</string>
     <string name="settings_appearance_language_title">Language</string>
     <string name="settings_appearance_calendar_title">Alternate calendar</string>
+    <string name="settings_appearance_eink_title">E-ink mode</string>
+    <string name="settings_appearance_eink_summary">Always light, high-contrast widgets, and volume keys to scroll the forecast (down: forward, up: back)</string>
     <string name="settings_appearance_dark_mode_title">App dark mode</string>
     <!-- %1$s = 22:00 / %2$s = 06:00 -->
     <string name="settings_appearance_dark_mode_custom">Dark mode from %1$s to %2$s</string>

@@ -242,6 +242,10 @@ object HourlyTrendWidgetIMP : AbstractRemoteViewsPresenter() {
                 )
                 widgetItemView.trendItemView.setHistogramAlpha(if (lightTheme) 0.2f else 0.5f)
                 widgetItemView.setBottomIconDrawable(null)
+                if (SettingsManager.getInstance(context).isEinkMode) {
+                    widgetItemView.trendItemView.setTextColors(Color.BLACK, Color.BLACK, Color.BLACK)
+                    widgetItemView.trendItemView.setHistogramAlpha(1f)
+                }
                 widgetItemView.setColor(lightTheme)
             }
         }

@@ -35,7 +35,9 @@ import org.breezyweather.ui.theme.resource.utils.Constants
 import org.breezyweather.ui.theme.resource.utils.XmlHelper
 import java.util.Objects
 
-class DefaultResourceProvider : ResourceProvider() {
+class DefaultResourceProvider(
+    private val einkMode: Boolean = false,
+) : ResourceProvider() {
     private val mContext: Context
     override var providerName: String? = null
     override val providerIcon: Drawable?
@@ -64,15 +66,16 @@ class DefaultResourceProvider : ResourceProvider() {
 
     // weather icon.
     override fun getWeatherIcon(code: WeatherCode?, dayTime: Boolean): Drawable {
-        return getDrawable(getWeatherIconName(code, dayTime))!!
+        return getDrawable(if (einkMode) getEinkIconName(code, dayTime) else getWeatherIconName(code, dayTime))!!
     }
 
     override fun getWeatherIconUri(code: WeatherCode?, dayTime: Boolean): Uri {
-        return getDrawableUri(getWeatherIconName(code, dayTime))
+        return getDrawableUri(if (einkMode) getEinkIconName(code, dayTime) else getWeatherIconName(code, dayTime))
     }
 
     @Size(3)
     override fun getWeatherIcons(code: WeatherCode?, dayTime: Boolean): Array<Drawable?> {
+        if (einkMode) return arrayOf(getWeatherIcon(code, dayTime), null, null)
         return arrayOf(
             getDrawable(getWeatherIconName(code, dayTime, 1)),
             getDrawable(getWeatherIconName(code, dayTime, 2)),
@@ -113,6 +116,7 @@ class DefaultResourceProvider : ResourceProvider() {
     // animator.
     @Size(3)
     override fun getWeatherAnimators(code: WeatherCode?, dayTime: Boolean): Array<Animator?> {
+        if (einkMode) return arrayOfNulls(3)
         return arrayOf(
             getAnimator(getWeatherAnimatorName(code, dayTime, 1)),
             getAnimator(getWeatherAnimatorName(code, dayTime, 2)),
@@ -164,10 +168,12 @@ class DefaultResourceProvider : ResourceProvider() {
     }
 
     override fun getMinimalDarkIcon(code: WeatherCode?, dayTime: Boolean): Drawable {
+        if (einkMode) return getWeatherIcon(code, dayTime)
         return getDrawable(getMiniDarkIconName(code, dayTime))!!
     }
 
     override fun getMinimalDarkIconUri(code: WeatherCode?, dayTime: Boolean): Uri {
+        if (einkMode) return getWeatherIconUri(code, dayTime)
         return Objects.requireNonNull(
             getDrawableUri(getMiniDarkIconName(code, dayTime))
         )
@@ -211,6 +217,9 @@ class DefaultResourceProvider : ResourceProvider() {
             innerGetMiniIconName(code, daytime) + Constants.SEPARATOR + Constants.DARK
         )
     }
+
+    private fun getEinkIconName(code: WeatherCode?, daytime: Boolean): String =
+        getMiniXmlIconName(code, daytime).removeSuffix("_mini_xml") + "_eink"
 
     private fun getMiniXmlIconName(code: WeatherCode?, daytime: Boolean): String {
         return getFilterResource(

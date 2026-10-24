@@ -65,6 +65,7 @@ class MaterialYouCurrentWidgetIMP : AbstractRemoteViewsPresenter() {
                         R.layout.widget_material_you_current
                     // } else R.layout.widget_material_you_current_mini
                     val remoteViews = RemoteViews(context.packageName, layoutId)
+                    applyEinkColors(context, remoteViews, layoutId)
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         // if (!isMini(context, widgetSize)) {

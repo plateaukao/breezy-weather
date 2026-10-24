@@ -38,6 +38,7 @@ import org.breezyweather.domain.weather.model.getShortDescription
 import org.breezyweather.domain.weather.model.getWeek
 import org.breezyweather.domain.weather.model.isToday
 import org.breezyweather.remoteviews.Widgets
+import org.breezyweather.remoteviews.presenters.AbstractRemoteViewsPresenter.Companion.applyEinkColors
 import org.breezyweather.ui.theme.resource.ResourceHelper
 import org.breezyweather.ui.theme.resource.ResourcesProviderFactory
 import org.breezyweather.unit.formatting.UnitWidth
@@ -129,6 +130,7 @@ private fun buildRemoteViews(
     @LayoutRes layoutId: Int,
 ): RemoteViews {
     val views = RemoteViews(context.packageName, layoutId)
+    applyEinkColors(context, views, layoutId)
 
     val weather = location?.weather ?: return views
     val dayTime = location.isDaylight

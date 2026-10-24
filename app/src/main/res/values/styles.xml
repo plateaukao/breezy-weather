@@ -1,5 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+    <style name="ThemeOverlay.BreezyWeather.Eink" parent="">
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@android:color/black</item>
+        <item name="colorOnSurfaceVariant">@android:color/black</item>
+        <item name="colorTitleText">@android:color/black</item>
+        <item name="colorBodyText">@android:color/black</item>
+        <item name="colorCaptionText">@android:color/black</item>
+        <item name="colorMainCardBackground">@android:color/white</item>
+    </style>
+
     <!-- app theme -->
     <style name="BreezyWeatherTheme" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <item name="colorPrimary">@color/md_theme_primary</item>

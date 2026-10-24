@@ -1,3 +1,21 @@
+# E-ink Weather
+
+An e-ink-focused fork of [Breezy Weather](https://github.com/breezy-weather/breezy-weather).
+
+Enable **Settings → Appearance → E-ink mode** for an always-light interface, crisp black weather symbols, and opaque white widgets without an app-drawn border.
+
+- Use **Volume Down / Volume Up** to page through the main forecast.
+- In **Weather conditions**, including the screen opened from a widget, the volume keys scroll within the day and move to the next/previous day at the bottom/top. Navigation stops at the available forecast boundaries.
+- Your regular appearance and widget settings are restored when e-ink mode is disabled.
+
+[Download the latest release](https://github.com/plateaukao/breezy-weather/releases/latest). Use the arm64 APK for Boox Palma 2 Pro, or the universal APK for other supported Android devices.
+
+This fork uses its own signing key and the `org.breezyweather` package ID. An upstream-signed installation must be removed before the first install; subsequent E-ink Weather releases can update in place. Providers that require API credentials, such as Taiwan CWA, need your own key in the app settings. Open-Meteo can be used without a key.
+
+The upstream project documentation follows below.
+
+---
+
 <div align="center">
 <br />
 <img src="app/src/res_breezy/mipmap-xxxhdpi/ic_launcher_round.webp" alt="Logo" />

@@ -30,8 +30,9 @@ object ResourcesProviderFactory {
 
     fun getNewInstance(packageName: String?): ResourceProvider {
         val context: Context = BreezyWeather.instance
-        val defaultProvider = DefaultResourceProvider()
-        if (packageName == null || DefaultResourceProvider.isDefaultIconProvider(packageName)) {
+        val einkMode = SettingsManager.getInstance(context).isEinkMode
+        val defaultProvider = DefaultResourceProvider(einkMode = einkMode)
+        if (einkMode || packageName == null || DefaultResourceProvider.isDefaultIconProvider(packageName)) {
             return defaultProvider
         }
         if (IconPackResourcesProvider.isIconPackIconProvider(context, packageName)) {

@@ -23,6 +23,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -84,6 +85,7 @@ import org.breezyweather.common.utils.helpers.LogHelper
 import org.breezyweather.common.utils.helpers.SnackbarHelper
 import org.breezyweather.databinding.ActivityMainBinding
 import org.breezyweather.domain.settings.SettingsChangedMessage
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.sources.SourceManager
 import org.breezyweather.ui.common.composables.AlertDialogConfirmOnly
 import org.breezyweather.ui.common.composables.AlertDialogNoPadding
@@ -260,9 +262,29 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
         }
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (useVolumeKeysForForecast(keyCode) &&
+            findHomeFragment()?.scrollForecast(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) == true
+        ) {
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if (useVolumeKeysForForecast(keyCode)) return true
+        return super.onKeyUp(keyCode, event)
+    }
+
+    private fun useVolumeKeysForForecast(keyCode: Int): Boolean =
+        (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) &&
+            SettingsManager.getInstance(this).isEinkMode &&
+            !isManagementFragmentVisible && findHomeFragment()?.isVisible == true
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        consumeIntentAction(getIntent())
+        setIntent(intent)
+        consumeIntentAction(intent)
     }
 
     override fun onActivityReenter(resultCode: Int, data: Intent) {
@@ -802,7 +824,7 @@ class MainActivity : BreezyActivity(), HomeFragment.Callback, ManagementFragment
     }
 
     private fun updateDayNightColors() {
-        if (this.getResources().configuration.orientation == 2) {
+        if (!SettingsManager.getInstance(this).isEinkMode && this.getResources().configuration.orientation == 2) {
             // Set a black background to keep the background of the system bars black when root
             // insets are applied in landscape mode.
             binding.root.setBackgroundColor(Color.BLACK)

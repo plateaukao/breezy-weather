@@ -23,11 +23,14 @@ import android.app.WallpaperManager
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.provider.AlarmClock
 import android.provider.CalendarContract
+import android.widget.RemoteViews
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
+import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
 import breezyweather.domain.location.model.Location
 import breezyweather.domain.weather.model.Weather
@@ -48,6 +51,7 @@ import org.breezyweather.common.utils.ColorUtils
 import org.breezyweather.common.utils.helpers.IntentHelper
 import org.breezyweather.domain.location.model.getPlace
 import org.breezyweather.domain.settings.ConfigStore
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.domain.weather.model.getDescription
 import org.breezyweather.domain.weather.model.getIndex
 import org.breezyweather.domain.weather.model.getName
@@ -58,6 +62,7 @@ import org.breezyweather.ui.theme.ThemeManager
 import org.breezyweather.unit.formatting.UnitWidth
 import org.breezyweather.unit.formatting.format
 import org.breezyweather.unit.temperature.TemperatureUnit
+import org.xmlpull.v1.XmlPullParser
 import java.util.Date
 
 abstract class AbstractRemoteViewsPresenter {
@@ -86,7 +91,11 @@ abstract class AbstractRemoteViewsPresenter {
             private set
 
         init {
-            backgroundType = WidgetBackgroundType.find(cardStyle)
+            backgroundType = if (SettingsManager.getInstance(context).isEinkMode) {
+                WidgetBackgroundType.LIGHT
+            } else {
+                WidgetBackgroundType.find(cardStyle)
+            }
             showCard = backgroundType != WidgetBackgroundType.NONE
             isLightThemed = when (backgroundType) {
                 WidgetBackgroundType.LIGHT -> true
@@ -106,10 +115,15 @@ abstract class AbstractRemoteViewsPresenter {
                     if (isLightThemed) NotificationTextColor.DARK else NotificationTextColor.LIGHT
                 }
             }
-            this.textColor = ContextCompat.getColor(
-                context,
-                if (textType == NotificationTextColor.DARK) R.color.colorTextDark else R.color.colorTextLight
-            )
+            this.textColor =
+                if (SettingsManager.getInstance(context).isEinkMode) {
+                    Color.BLACK
+                } else {
+                    ContextCompat.getColor(
+                        context,
+                        if (textType == NotificationTextColor.DARK) R.color.colorTextDark else R.color.colorTextLight
+                    )
+                }
         }
 
         val minimalIconColor: NotificationTextColor
@@ -179,7 +193,34 @@ abstract class AbstractRemoteViewsPresenter {
                 context.getString(R.string.key_align_end),
                 false
             )
+            if (SettingsManager.getInstance(context).isEinkMode) {
+                widgetConfig.cardStyle = "light"
+                widgetConfig.cardAlpha = 100
+                widgetConfig.textColor = "dark"
+                widgetConfig.clockFont = "normal"
+            }
             return widgetConfig
+        }
+
+        fun applyEinkColors(context: Context, views: RemoteViews, @LayoutRes layoutId: Int) {
+            if (!SettingsManager.getInstance(context).isEinkMode) return
+            context.resources.getLayout(layoutId).use { parser ->
+                while (parser.eventType != XmlPullParser.END_DOCUMENT) {
+                    if (parser.eventType == XmlPullParser.START_TAG) {
+                        val id = parser.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "id", 0)
+                        if (id != 0) {
+                            if (parser.depth == 1) {
+                                views.setInt(id, "setBackgroundResource", R.drawable.widget_card_eink)
+                            }
+                            if (parser.name == "TextView" || parser.name == "TextClock") {
+                                views.setTextColor(id, Color.BLACK)
+                                views.setFloat(id, "setAlpha", 1f)
+                            }
+                        }
+                    }
+                    parser.next()
+                }
+            }
         }
 
         @SuppressLint("MissingPermission")
@@ -203,6 +244,7 @@ abstract class AbstractRemoteViewsPresenter {
             require(color.backgroundType != WidgetColor.WidgetBackgroundType.NONE) {
                 "Trying to get widget background when background type is NONE"
             }
+            if (SettingsManager.getInstance(color.context).isEinkMode) return R.drawable.widget_card_eink
             return if (color.isLightThemed) R.drawable.widget_card_light else R.drawable.widget_card_dark
         }
 

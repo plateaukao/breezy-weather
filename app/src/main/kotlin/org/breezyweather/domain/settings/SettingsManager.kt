@@ -171,14 +171,25 @@ class SettingsManager private constructor(
         }
         get() = config.getBoolean("refresh_ignore_battery_low", true)
 
+    var isEinkMode: Boolean
+        set(value) {
+            config.edit().putBoolean("eink_mode", value).apply()
+            notifySettingsChanged()
+        }
+        get() = config.getBoolean("eink_mode", false)
+
     var darkMode: DarkMode
         set(value) {
             config.edit().putString("dark_mode", value.id).apply()
             notifySettingsChanged()
         }
-        get() = DarkMode.getInstance(
-            config.getString("dark_mode", null) ?: "system"
-        )
+        get() = if (isEinkMode) {
+            DarkMode.LIGHT
+        } else {
+            DarkMode.getInstance(
+                config.getString("dark_mode", null) ?: "system"
+            )
+        }
 
     // Default config is: follow system on Android 10+ (disabled), automatic day/night switch (enabled)
     // on Android < 10 where dark mode doesn’t exist natively
@@ -321,7 +332,7 @@ class SettingsManager private constructor(
             config.edit().putBoolean("main_screen_background", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("main_screen_background", true)
+        get() = !isEinkMode && config.getBoolean("main_screen_background", true)
 
     var isTrendHorizontalLinesEnabled: Boolean
         set(value) {
@@ -351,14 +362,14 @@ class SettingsManager private constructor(
             config.edit().putBoolean("list_animation_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("list_animation_switch", true)
+        get() = !isEinkMode && config.getBoolean("list_animation_switch", true)
 
     var isElementsAnimationEnabled: Boolean
         set(value) {
             config.edit().putBoolean("item_animation_switch", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("item_animation_switch", true)
+        get() = !isEinkMode && config.getBoolean("item_animation_switch", true)
 
     var languageUpdateLastTimestamp: Long
         set(value) {
@@ -421,7 +432,7 @@ class SettingsManager private constructor(
             config.edit().putBoolean("widget_monochrome_icons", value).apply()
             notifySettingsChanged()
         }
-        get() = config.getBoolean("widget_monochrome_icons", false)
+        get() = isEinkMode || config.getBoolean("widget_monochrome_icons", false)
 
     // notification widget
     var isWidgetNotificationEnabled: Boolean

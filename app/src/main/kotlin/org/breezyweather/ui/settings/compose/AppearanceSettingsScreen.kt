@@ -76,6 +76,7 @@ import org.breezyweather.ui.settings.preference.composables.ListPreferenceView
 import org.breezyweather.ui.settings.preference.composables.ListPreferenceViewWithCard
 import org.breezyweather.ui.settings.preference.composables.PreferenceScreen
 import org.breezyweather.ui.settings.preference.composables.PreferenceViewWithCard
+import org.breezyweather.ui.settings.preference.composables.SwitchPreferenceView
 import org.breezyweather.ui.settings.preference.largeSeparatorItem
 import org.breezyweather.ui.settings.preference.listPreferenceItem
 import org.breezyweather.ui.settings.preference.sectionFooterItem
@@ -91,9 +92,11 @@ fun AppearanceSettingsScreen(
     onNavigateTo: (route: String) -> Unit,
     onNavigateBack: () -> Unit,
     darkMode: DarkMode,
+    onEinkModeChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollBehavior = generateCollapsedScrollBehavior()
+    val einkMode = remember { mutableStateOf(SettingsManager.getInstance(context).isEinkMode) }
 
     Material3Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -137,6 +140,19 @@ fun AppearanceSettingsScreen(
             largeSeparatorItem()
 
             sectionHeaderItem(R.string.settings_appearance_section_theme)
+            switchPreferenceItem(R.string.settings_appearance_eink_title) { id ->
+                SwitchPreferenceView(
+                    title = stringResource(id),
+                    summary = { _, _ -> context.getString(R.string.settings_appearance_eink_summary) },
+                    checked = einkMode.value,
+                    isFirst = true,
+                    onValueChanged = {
+                        einkMode.value = it
+                        onEinkModeChanged(it)
+                    }
+                )
+            }
+            smallSeparatorItem()
             listPreferenceItem(R.string.settings_appearance_dark_mode_title) { id ->
                 val valueArray = stringArrayResource(R.array.dark_mode_values)
                 val nameArray = stringArrayResource(R.array.dark_modes).mapIndexed { index, string ->
@@ -184,7 +200,7 @@ fun AppearanceSettingsScreen(
                     selectedKey = darkMode.id,
                     valueArray = valueArray,
                     nameArray = nameArray,
-                    isFirst = true,
+                    enabled = !einkMode.value,
                     withState = false,
                     onValueChanged = {
                         val newDarkMode = DarkMode.getInstance(it)
@@ -206,7 +222,7 @@ fun AppearanceSettingsScreen(
                     valueArrayId = R.array.dark_mode_location_values,
                     nameArrayId = R.array.dark_modes_location,
                     card = true,
-                    enabled = darkMode != DarkMode.LIGHT,
+                    enabled = !einkMode.value && darkMode != DarkMode.LIGHT,
                     onValueChanged = {
                         val newDarkModeLocation = DarkModeLocation.getInstance(it)
                         SettingsManager.getInstance(context).dayNightModeForLocations = newDarkModeLocation.value

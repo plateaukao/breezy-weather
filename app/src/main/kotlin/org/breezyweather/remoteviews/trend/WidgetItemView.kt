@@ -28,6 +28,7 @@ import androidx.core.graphics.ColorUtils
 import org.breezyweather.R
 import org.breezyweather.common.extensions.dpToPx
 import org.breezyweather.common.extensions.getTypefaceFromTextAppearance
+import org.breezyweather.domain.settings.SettingsManager
 import org.breezyweather.ui.common.widgets.trend.chart.PolylineAndHistogramView
 
 /**
@@ -183,7 +184,10 @@ class WidgetItemView @JvmOverloads constructor(
     }
 
     fun setColor(daytime: Boolean) {
-        if (daytime) {
+        if (SettingsManager.getInstance(context).isEinkMode) {
+            mContentColor = android.graphics.Color.BLACK
+            mSubtitleColor = android.graphics.Color.BLACK
+        } else if (daytime) {
             mContentColor = ContextCompat.getColor(context, R.color.colorTextDark)
             mSubtitleColor = ColorUtils.setAlphaComponent(
                 ContextCompat.getColor(context, R.color.colorTextDark),

@@ -149,13 +149,11 @@ class HomeFragment : MainModuleFragment() {
             .getInstance(requireContext())
             .weatherThemeDelegate
         val location = if (::viewModel.isInitialized) viewModel.currentLocation.value?.location else null
-        val isLightBackground = location?.let {
-            delegate.isLightBackground(
-                requireContext(),
-                WeatherViewController.getWeatherKind(it),
-                WeatherViewController.isDaylight(it)
-            )
-        } ?: false
+        val isLightBackground = delegate.isLightBackground(
+            requireContext(),
+            WeatherViewController.getWeatherKind(location),
+            WeatherViewController.isDaylight(location)
+        )
 
         requireActivity().window.setSystemBarStyle(isLightBackground)
     }
@@ -316,6 +314,14 @@ class HomeFragment : MainModuleFragment() {
                 }
             }
         }
+    }
+
+    fun scrollForecast(down: Boolean): Boolean {
+        if (!isVisible || !::binding.isInitialized) return false
+        binding.recyclerView.stopScroll()
+        val page = (binding.recyclerView.height * 0.8f).toInt()
+        binding.recyclerView.scrollBy(0, if (down) page else -page)
+        return true
     }
 
     private fun updateDayNightColors() {

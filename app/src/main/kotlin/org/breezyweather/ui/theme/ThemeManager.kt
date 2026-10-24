@@ -42,7 +42,9 @@ class ThemeManager private constructor(
                 synchronized(ThemeManager::class) {
                     if (instance == null) {
                         instance = ThemeManager(
-                            weatherThemeDelegate = MaterialWeatherThemeDelegate()
+                            weatherThemeDelegate = MaterialWeatherThemeDelegate {
+                                SettingsManager.getInstance(it).isEinkMode
+                            }
                         )
                     }
                 }
@@ -70,6 +72,7 @@ class ThemeManager private constructor(
             daylight: Boolean?,
         ): Boolean {
             val settings = SettingsManager.getInstance(context)
+            if (settings.isEinkMode) return true
             return when (settings.darkMode) {
                 DarkMode.LIGHT -> daylight == true
                 DarkMode.DARK -> settings.dayNightModeForLocations && daylight == true

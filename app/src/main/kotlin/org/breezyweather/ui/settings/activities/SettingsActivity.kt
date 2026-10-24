@@ -37,6 +37,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
+import org.breezyweather.BreezyWeather
 import org.breezyweather.common.activities.BreezyActivity
 import org.breezyweather.common.bus.EventBus
 import org.breezyweather.common.extensions.hasPermission
@@ -227,7 +228,16 @@ class SettingsActivity : BreezyActivity() {
                     context = this@SettingsActivity,
                     onNavigateTo = { navController.navigate(it) },
                     onNavigateBack = { onBack() },
-                    darkMode = remember { darkModeState }.value
+                    darkMode = remember { darkModeState }.value,
+                    onEinkModeChanged = { enabled ->
+                        scope.launch {
+                            val settings = SettingsManager.getInstance(this@SettingsActivity)
+                            settings.isEinkMode = enabled
+                            refreshHelper.updateWidgetIfNecessary(applicationContext)
+                            BreezyWeather.instance.updateDayNightMode(settings.darkMode.value)
+                            BreezyWeather.instance.recreateAllActivities()
+                        }
+                    }
                 )
             }
             composable(SettingsScreenRouter.Unit.route) {

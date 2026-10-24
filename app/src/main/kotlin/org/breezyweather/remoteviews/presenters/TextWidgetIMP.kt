@@ -81,10 +81,9 @@ object TextWidgetIMP : AbstractRemoteViewsPresenter() {
         subtitleData: String?,
         pollenIndexSource: PollenIndexSource?,
     ): RemoteViews {
-        val views = RemoteViews(
-            context.packageName,
-            if (alignEnd) R.layout.widget_text_end else R.layout.widget_text
-        )
+        val layoutId = if (alignEnd) R.layout.widget_text_end else R.layout.widget_text
+        val views = RemoteViews(context.packageName, layoutId)
+        applyEinkColors(context, views, layoutId)
         val weather = location?.weather ?: return views
         val temperatureUnit = SettingsManager.getInstance(context).getTemperatureUnit(context)
 

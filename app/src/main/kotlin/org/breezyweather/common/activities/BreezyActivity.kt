@@ -26,9 +26,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.Lifecycle
 import org.breezyweather.BreezyWeather
+import org.breezyweather.R
 import org.breezyweather.common.extensions.isDarkMode
 import org.breezyweather.common.extensions.setSystemBarStyle
 import org.breezyweather.common.snackbar.SnackbarContainer
+import org.breezyweather.domain.settings.SettingsManager
 
 abstract class BreezyActivity : AppCompatActivity() {
 
@@ -36,6 +38,9 @@ abstract class BreezyActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (SettingsManager.getInstance(this).isEinkMode) {
+            theme.applyStyle(R.style.ThemeOverlay_BreezyWeather_Eink, true)
+        }
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             window.setSystemBarStyle(!isDarkMode)

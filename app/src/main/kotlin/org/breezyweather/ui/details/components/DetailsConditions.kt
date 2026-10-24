@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Check
@@ -122,6 +124,7 @@ fun DetailsConditions(
     selectedChart: DetailScreen,
     setShowRealTemp: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    listState: LazyListState = rememberLazyListState(),
 ) {
     val context = LocalContext.current
     val temperatureUnit = remember {
@@ -196,6 +199,7 @@ fun DetailsConditions(
     val coroutineScope = rememberCoroutineScope()
 
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             horizontal = dimensionResource(R.dimen.normal_margin),
